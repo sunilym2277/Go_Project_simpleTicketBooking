@@ -2,15 +2,22 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
+	"time"
 )
 
 const totalTickets uint = 50
 
-var Bookings = make([]map[string]string, 1)
+var Bookings = make([]userData, 0)
 var conferenceName string = "Go Conference"
 var remainingTickets uint = 50 //alternate way to declare variables
+
+type userData struct {
+	firstName string
+	lastName  string
+	emailID   string
+	tickets   uint
+}
 
 func main() {
 
@@ -24,6 +31,7 @@ func main() {
 		if isValidEmail && isValidName && isValidTickets {
 			// Book tickets
 			bookTickets(firstName, lastName, emailId, tickets)
+			go sendTicket(firstName, lastName, emailId, tickets)
 			var firstNames = printFirstname()
 			remainingTickets = remainingTickets - tickets
 			fmt.Printf(" total Bookings are %v \nRemaining tickets are %v\n", firstNames, remainingTickets)
@@ -59,7 +67,7 @@ func greetFunction() {
 func printFirstname() []string {
 	firstNames := []string{}
 	for _, boooking := range Bookings {
-		firstNames = append(firstNames, boooking["firstName"])
+		firstNames = append(firstNames, boooking.firstName)
 	}
 	return firstNames
 }
@@ -82,14 +90,15 @@ func getUserInput() (string, string, string, uint) {
 }
 
 func bookTickets(firstName string, lastName string, emailId string, tickets uint) {
-	var userData = make(map[string]string)
-	userData["firstName"] = firstName
-	userData["lastName"] = lastName
-	userData["emailID"] = emailId
-	userData["noOfTickets"] = strconv.FormatUint(uint64(tickets), 10)
+	var userData = userData{
+		firstName: firstName,
+		lastName:  lastName,
+		emailID:   emailId,
+		tickets:   tickets,
+	}
 	Bookings = append(Bookings, userData)
-	fmt.Printf("list of bookings are : %v", Bookings)
-	// fmt.Printf("Thank you %v %v for booking %v, you will receive confirmation at %v . \n", firstName, lastName, tickets, emailId)
+	// fmt.Printf("list of bookings are : %v", Bookings)
+	fmt.Printf("Thank you %v %v for booking %v, you will receive confirmation at %v . \n", firstName, lastName, tickets, emailId)
 
 }
 func ValidateUserInput(firstName string, lastName string, emailId string, tickets uint, remainingTickets uint) (bool, bool, bool) {
@@ -98,4 +107,14 @@ func ValidateUserInput(firstName string, lastName string, emailId string, ticket
 	isValidTickets := remainingTickets-tickets >= uint(0)
 
 	return isValidName, isValidEmail, isValidTickets
+}
+
+func sendTicket(firstName string, lastName string, emailId string, tickets uint) {
+	time.Sleep(time.Second * 10)
+	var ticket = fmt.Sprintf("%v tickets for %v %v", tickets, firstName, lastName)
+
+	fmt.Println("###########################################################")
+	fmt.Printf("Sending tickets : \n %v \nto email ID : %v ", ticket, emailId)
+	fmt.Println("###########################################################")
+
 }
