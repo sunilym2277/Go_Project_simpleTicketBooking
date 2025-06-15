@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -27,7 +28,8 @@ func main() {
 		firstName, lastName, emailId, tickets := getUserInput()
 
 		// validate user Input
-		isValidName, isValidEmail, isValidTickets := ValidateUserInput(firstName, lastName, emailId, tickets, remainingTickets)
+		isValidName, isValidEmail, isValidTickets, err := ValidateUserInput(firstName, lastName, emailId, tickets, remainingTickets)
+
 		if isValidEmail && isValidName && isValidTickets {
 			// Book tickets
 			bookTickets(firstName, lastName, emailId, tickets)
@@ -41,16 +43,17 @@ func main() {
 				break
 			}
 		} else {
+			fmt.Printf("ERROR : %v\n", err)
 			if !isValidName {
-				fmt.Println("ERROR : User name should be minimumm of 2 characters")
+				fmt.Println("Details : User name should be minimumm of 2 characters")
 			}
 
 			if !isValidEmail {
-				fmt.Println("ERROR : Email ID should have @ in it")
+				fmt.Println("Details : Email ID should have @ in it")
 			}
 
 			if !isValidTickets {
-				fmt.Printf("ERROR : Remaining tickets for booking are  %v\nPlease book within this\n\n\n\n", remainingTickets)
+				fmt.Printf("Details : Remaining tickets for booking are  %v\nPlease book within this\n\n\n\n", remainingTickets)
 			}
 		}
 
@@ -101,20 +104,24 @@ func bookTickets(firstName string, lastName string, emailId string, tickets uint
 	fmt.Printf("Thank you %v %v for booking %v, you will receive confirmation at %v . \n", firstName, lastName, tickets, emailId)
 
 }
-func ValidateUserInput(firstName string, lastName string, emailId string, tickets uint, remainingTickets uint) (bool, bool, bool) {
+func ValidateUserInput(firstName string, lastName string, emailId string, tickets uint, remainingTickets uint) (bool, bool, bool, error) {
 	isValidName := (len(firstName) > 2) || (len(lastName) > 2)
 	isValidEmail := strings.Contains(emailId, "@")
 	isValidTickets := remainingTickets-tickets >= uint(0)
+	if isValidName && isValidTickets && isValidEmail {
+		return isValidName, isValidEmail, isValidTickets, nil
+	} else {
+		return isValidName, isValidEmail, isValidTickets, errors.New("Not a valid user input")
+	}
 
-	return isValidName, isValidEmail, isValidTickets
 }
 
 func sendTicket(firstName string, lastName string, emailId string, tickets uint) {
 	time.Sleep(time.Second * 10)
 	var ticket = fmt.Sprintf("%v tickets for %v %v", tickets, firstName, lastName)
 
-	fmt.Println("###########################################################")
+	fmt.Println("\n###########################################################")
 	fmt.Printf("Sending tickets : \n %v \nto email ID : %v ", ticket, emailId)
-	fmt.Println("###########################################################")
+	fmt.Println("###########################################################\n")
 
 }
